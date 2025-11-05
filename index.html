@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园美食智能体 - 菜单浏览与点餐</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #ff9e7d;
+            --accent: #ffd166;
+            --light: #fff9f0;
+            --dark: #333333;
+            --success: #06d6a0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .search-bar {
+            display: flex;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
+        }
+        
+        .search-bar input {
+            flex: 1;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .search-bar button {
+            background: var(--accent);
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            color: var(--dark);
+            transition: background 0.3s;
+        }
+        
+        .search-bar button:hover {
+            background: #ffc145;
+        }
+        
+        .filters {
+            background: white;
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: 2px solid #eee;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .restaurant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 3rem;
+        }
+        
+        .restaurant-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 15px;
+            background: var(--light);
+            border-bottom: 1px solid #eee;
+        }
+        
+        .restaurant-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .restaurant-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .signature-dish {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .menu-items {
+            margin-top: 15px;
+        }
+        
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .price {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .tag {
+            background: var(--light);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .card-footer {
+            padding: 15px;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .order-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .order-btn:hover {
+            background: #ff5252;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+        
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ddd;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .restaurant-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-options {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <h1>校园美食智能体</h1>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="搜索餐厅或菜品...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <section class="filters">
+        <div class="container">
+            <div class="filter-options">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="区域" data-value="鲲园一楼">鲲园一楼</button>
+                <button class="filter-btn" data-filter="区域" data-value="鲲园二楼">鲲园二楼</button>
+                <button class="filter-btn" data-filter="区域" data-value="小吃街">小吃街</button>
+                <button class="filter-btn" data-filter="区域" data-value="赵一鸣旁">赵一鸣旁</button>
+                <button class="filter-btn" data-filter="类型" data-value="饮品店">饮品</button>
+                <button class="filter-btn" data-filter="类型" data-value="中餐">中餐</button>
+                <button class="filter-btn" data-filter="类型" data-value="西式快餐">西式快餐</button>
+                <button class="filter-btn" data-filter="类型" data-value="烧烤">烧烤</button>
+            </div>
+        </div>
+    </section>
+    
+    <main class="container">
+        <div class="restaurant-grid" id="restaurant-container">
+            <!-- 餐厅卡片将通过JavaScript动态生成 -->
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>校园美食智能体 &copy; 2023 - 让校园生活更美味</p>
+            <p>数据来源：校园食堂菜单、赵一鸣周边、小吃街等</p>
+        </div>
+    </footer>
+
+    <script>
+        // 餐厅数据
+        const restaurants = [
+            {
+                "店名": "一茶知秋",
+                "地址": "校门口对面，赵一鸣零食店旁",
+                "招牌菜": "芝士奶盖茶(12元)、水果茶(15元)",
+                "口味": "新式茶饮、奶盖香醇、果茶清爽",
+                "菜单": {
+                    "芝士奶盖茶": "12元",
+                    "水果茶": "15元",
+                    "珍珠奶茶": "10元",
+                    "四季春茶": "8元",
+                    "芋圆奶茶": "13元"
+                },
+                "区域": "赵一鸣旁",
+                "口味标签": ["甜口", "茶香", "清新"],
+                "距离": "23分钟",
+                "类型": "奶茶饮品",
+                "营业时间": "10:00-22:30"
+            },
+            {
+                "店名": "冰雪之城",
+                "地址": "校门口对面，赵一鸣零食店旁",
+                "招牌菜": "手工冰淇淋(6元)、圣代(10元)",
+                "口味": "奶味浓郁、口感绵密、夏日必备",
+                "菜单": {
+                    "手工冰淇淋": "6元",
+                    "圣代": "10元",
+                    "冰淇淋球": "5元/个",
+                    "甜筒": "4元",
+                    "冰淇淋杯": "8元"
+                },
+                "区域": "赵一鸣旁",
+                "口味标签": ["甜口", "奶香"],
+                "距离": "23分钟",
+                "类型": "冰淇淋店",
+                "营业时间": "10:00-22:00"
+            },
+            {
+                "店名": "煲煲香",
+                "地址": "校门口对面，赵一鸣零食店旁",
+                "招牌菜": "鸡公煲(25元)、牛杂煲(28元)",
+                "口味": "煲类专门、热气腾腾、酱香入味",
+                "菜单": {
+                    "鸡公煲": "25元",
+                    "牛杂煲": "28元",
+                    "牛杂粉": "15元",
+                    "排骨煲": "26元",
+                    "配菜": "3-5元"
+                },
+                "区域": "赵一鸣旁",
+                "口味标签": ["咸香", "酱香"],
+                "距离": "23分钟",
+                "类型": "煲仔菜",
+                "营业时间": "11:00-21:00"
+            },
+            {
+                "店名": "小炒档口",
+                "地址": "鲲园饭堂一楼，进门右手边第一家",
+                "招牌菜": "辣子鸡丁(14元)、鱼香肉丝(13元)",
+                "口味": "川湘风味、现炒锅气、咸香下饭",
+                "菜单": {
+                    "辣子鸡丁": "14元",
+                    "鱼香肉丝": "13元",
+                    "手撕包菜": "8元",
+                    "麻婆豆腐": "10元",
+                    "时蔬小炒": "8元"
+                },
+                "区域": "鲲园一楼",
+                "口味标签": ["咸香麻辣", "酸辣", "香辣"],
+                "距离": "10分钟",
+                "类型": "中式炒菜",
+                "营业时间": "6:00-20:30"
+            },
+            {
+                "店名": "清爽柠檬茶",
+                "地址": "校门口对面小吃街第一排",
+                "招牌菜": "手打柠檬茶(8元)、鸭屎香柠檬茶(10元)",
+                "口味": "手打暴爽、茶香清新、解腻神器",
+                "菜单": {
+                    "手打柠檬茶": "8元",
+                    "鸭屎香柠檬茶": "10元",
+                    "椰奶柠檬茶": "12元"
+                },
+                "区域": "小吃街",
+                "口味标签": ["清新酸甜", "茶香"],
+                "距离": "20分钟",
+                "类型": "饮品店",
+                "营业时间": "10:00-22:00"
+            },
+            {
+                "店名": "壮壮炒粉",
+                "地址": "校门口对面小吃街第一排",
+                "招牌菜": "牛肉炒粉(14元)",
+                "口味": "镬气十足、油香四溢、夜宵首选",
+                "菜单": {
+                    "肉丝炒粉": "10元",
+                    "鸡蛋炒粉": "8元",
+                    "牛肉炒粉": "14元"
+                },
+                "区域": "小吃街",
+                "口味标签": ["咸香", "油香"],
+                "距离": "20分钟",
+                "类型": "炒粉摊",
+                "营业时间": "17:00-24:00"
+            }
+        ];
+
+        // 渲染餐厅卡片
+        function renderRestaurants(restaurantsToRender) {
+            const container = document.getElementById('restaurant-container');
+            
+            if (restaurantsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <h3>没有找到匹配的餐厅</h3>
+                        <p>请尝试其他搜索条件</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = restaurantsToRender.map(restaurant => `
+                <div class="restaurant-card">
+                    <div class="card-header">
+                        <div class="restaurant-name">${restaurant.店名}</div>
+                        <div class="restaurant-info">
+                            <span><i class="fas fa-map-marker-alt"></i> ${restaurant.区域}</span>
+                            <span><i class="fas fa-clock"></i> ${restaurant.距离}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="signature-dish">
+                            <i class="fas fa-star"></i> ${restaurant.招牌菜}
+                        </div>
+                        <div class="menu-items">
+                            ${Object.entries(restaurant.菜单).map(([dish, price]) => `
+                                <div class="menu-item">
+                                    <span>${dish}</span>
+                                    <span class="price">${price}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="tags">
+                            ${restaurant.口味标签.map(tag => `
+                                <span class="tag">${tag}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>${restaurant.营业时间}</span>
+                        <button class="order-btn">立即点餐</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // 添加点餐按钮事件
+            document.querySelectorAll('.order-btn').forEach((btn, index) => {
+                btn.addEventListener('click', () => {
+                    const restaurant = restaurantsToRender[index];
+                    alert(`您选择了 ${restaurant.店名}，点餐功能即将开放！`);
+                });
+            });
+        }
+
+        // 初始渲染
+        renderRestaurants(restaurants);
+
+        // 搜索功能
+        document.getElementById('search-btn').addEventListener('click', performSearch);
+        document.getElementById('search-input').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filteredRestaurants = restaurants.filter(restaurant => 
+                restaurant.店名.toLowerCase().includes(searchTerm) ||
+                restaurant.招牌菜.toLowerCase().includes(searchTerm) ||
+                Object.keys(restaurant.菜单).some(dish => dish.toLowerCase().includes(searchTerm)) ||
+                restaurant.口味标签.some(tag => tag.toLowerCase().includes(searchTerm))
+            );
+            renderRestaurants(filteredRestaurants);
+        }
+
+        // 筛选功能
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 更新活动按钮
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filterType = btn.getAttribute('data-filter');
+                const filterValue = btn.getAttribute('data-value');
+                
+                let filteredRestaurants;
+                
+                if (filterType === 'all') {
+                    filteredRestaurants = restaurants;
+                } else {
+                    filteredRestaurants = restaurants.filter(restaurant => 
+                        restaurant[filterType] === filterValue
+                    );
+                }
+                
+                renderRestaurants(filteredRestaurants);
+            });
+        });
+    </script>
+</body>
+</html>
